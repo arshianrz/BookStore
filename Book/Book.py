@@ -6,6 +6,8 @@ class Book:
     """
     ID_counter = 1
     books_quantity = 0
+    books = {}
+    books['context'] = []
 
     def __init__(self, name, author, genre, price, quantity, ID):
         """
@@ -23,7 +25,7 @@ class Book:
         self.genre = genre
         self.quantity = quantity
         self.price = price
-        self.ID = ID
+        self.ID = 1000 + Book.ID_counter
         Book.ID_counter += 1
         Book.books_quantity += self.quantity
 
@@ -46,15 +48,27 @@ class Book:
         self.price = input("Enter price :")
         self.quantity = input("Enter quantity :")
         self.ID = 1000 + self.ID_counter
-        serialized_object = json.dumps(self.__dict__)
-        book_file = open("Books.txt", "a")
-        book_file.write(serialized_object)
-        book_file.close()
+        self.books['context'].append(self.__dict__)
+        with open('Books.txt', 'a') as outfile:
+            json.dump(Book.books, outfile)
+        outfile.close
+        print("Book named : ",self.name ,"\ncreated successfully with ID : ",self.ID)
+        
 
     def remove_book(self):
         check = str(input("You are about to remove a book. \n Are you sure (Y/N) ?")).lower().strip()
         try:
             if check[0] == 'y':
+                with open('Books.txt') as json_file:
+                    book_dict = json.load(json_file)
+                    for temp_book in book_dict['context']:
+                        if self.name != temp_book['name']:
+                            print("Book not found.")
+                        elif self.name == temp_book['name']:
+                            book_dict['context'].remove(temp_book)
+                            with open('Books.txt', 'w') as outfile:
+                                json.dump(Book.books, outfile)
+                            outfile.close
                 del self
                 print("Book deleted successfully.")
             elif check[0] == 'n':
@@ -62,8 +76,35 @@ class Book:
                 return False
             else:
                 print('Invalid Input')
-                return self.remove_book(self)
+                return self.remove_book()
         except Exception as error:
             print("Please enter valid inputs")
             print(error)
-            return self.remove_book(self)
+            return self.remove_book()
+
+    def search_book(self):
+        check = str(input("Search by ID or Name ? \n (1 -> ID , 2 -> Name)")).lower().strip()
+        try:
+            if check[0] == '1' :
+                with open('Books.txt') as json_file:
+                    book_dict = json.load(json_file)
+                    for temp_book in book_dict['context']:
+                        if self.ID != temp_book['ID']:
+                            print("Book with given ID not found.")
+                        elif self.name == temp_book['name']:
+                            self.book_info()
+            elif check[0] == '2' :
+                with open('Books.txt') as json_file:
+                    book_dict = json.load(json_file)
+                    for temp_book in book_dict['context']:
+                        if self.ID != temp_book['Name']:
+                            print("Book with given Name not found.")
+                        elif self.name == temp_book['name']:
+                            self.book_info()
+            else:
+                print('Invalid Input')
+                return self.search_book()
+        except Exception as error:
+            print("Please enter valid inputs(1/2)")
+            print(error)
+            return self.search_book()

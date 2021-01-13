@@ -1,8 +1,15 @@
-from BookStore import Book
-from datetime import date
+import os
 import json
+import datetime
+from   datetime  import datetime,date
+from   BookStore import Book
+
 
 class Customer(Book.Book.Book):
+    purchase_quantity = 0
+    invoices = {}
+    invoices['context'] = []
+
     def __init__(self,name,last_name,purchase_date,book_choice):
         self.name = name
         self.last_name = last_name
@@ -28,12 +35,38 @@ class Customer(Book.Book.Book):
         self.name = input("Customer name : ")
         self.last_name = input("Customer Last Name : ")
         self.purchase_date = self.today.strftime("%B %d, %Y")
-        invoice = { "name":self.name,
-                    "last_name":self.last_name,
-                    "Book":self.book_choice,
-                    "purchase_date":self.purchase_date}
-                    
-        with open('invoice.txt', 'a') as outfile:
-            json.dump(invoice, outfile)
+        self.invoices['context'].append(self.__dict__) 
+
+        with open('invoices.txt', 'a') as outfile:
+            json.dump(self.invoices, outfile)
+        outfile.close
+
+        os.system('touch '+ self.name + '.txt')
+        with open(self.name +'.txt' , 'w') as outfile:
+            json.dump(self.__dict__, outfile)
         outfile.close
         print("Invoice exported successfully.")
+        self.purchase_quantity += 1
+
+    def time_interval(self):
+        counter = 0
+        first_interval_year = input("Please enter first time interval's year : ")
+        first_interval_month = input("Please enter first time interval's month : ")
+        first_interval_day = input("Please enter first time interval's day : ")
+        first_interval_date = datetime.date(first_interval_year,first_interval_month,first_interval_day)
+        print("First interval date is :",first_interval_date.strftime("%B %d, %Y"))
+        
+        second_interval_year = input("Please enter second time interval's year : ")
+        second_interval_month = input("Please enter second time interval's month : ")
+        second_interval_day = input("Please enter second time interval's day : ")
+        second_interval_date = datetime.date(second_interval_year,second_interval_month,second_interval_day)
+        print("Second interval's date is :",second_interval_date.strftime("%B %d, %Y"))
+
+        with open('invoices.txt') as json_file:
+            invoices_dict = json.load(json_file)
+            for temp_invoice in invoices_dict['context']:
+                purchase_date = datetime.strptime(temp_invoice['purchase_date'],"%B %d, %Y")
+                if first_interval_date < purchase_date < second_interval_date :
+                    counter += 1
+
+                    
